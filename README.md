@@ -9,7 +9,7 @@ E97 Emulator rebuilt from from scratch in C + GTK, inspired by [K. Polyakov's "Ð
 - [x] Code input
 - [ ] Code being ran
 - [ ] By-registor output
-- [ ] Lamps field
+- [x] Lamps field
 - [ ] Debugging info??
 
 # Time bounds (WHEN DONE????)
