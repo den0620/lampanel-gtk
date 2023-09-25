@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <gtk/gtk.h>
+#include <stdint.h> // see E97-asm.h
 #include "E97-asm.h"
 //#include <gtksourceview/gtksource.h>
 
@@ -9,18 +10,24 @@ static GtkWidget *r0;
 static GtkWidget *r1;
 static GtkWidget *r2;
 static GtkWidget *r3;
+static GtkWidget *exitStatus;
 
-static void runE97(){
+static void runEmulation(){
+  char *text;
+  int64_t registors;
   GtkTextIter start, end;
   GtkTextBuffer *buffer = gtk_text_view_get_buffer(lampanelInput);
-  char *text;
 
   gtk_text_buffer_get_bounds (buffer, &start, &end);
   text = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
 
   printf(text);
 
-  extern runE97(text);
+  registors = runE97(text);
+
+  // unglue 64 bit int to 4 16 bit registors and print 'em
+
+  // code needed
 
   g_free (text);
 }
@@ -31,7 +38,7 @@ static void windowActivate(GApplication *app){
 
   // Play Button
   runProgram = gtk_button_new_from_icon_name("media-playback-start-symbolic");
-  g_signal_connect(runProgram, "clicked", G_CALLBACK(runE97), NULL);
+  g_signal_connect(runProgram, "clicked", G_CALLBACK(runEmulation), NULL);
 
   // Titlebar [>    -^x]
   titlebar = gtk_header_bar_new();
@@ -41,7 +48,7 @@ static void windowActivate(GApplication *app){
   window = gtk_application_window_new(GTK_APPLICATION(app));
   gtk_window_set_title(GTK_WINDOW(window), "Lampanel GTK");
   gtk_window_set_icon_name(GTK_WINDOW(window), "application-x-executable");
-  gtk_window_set_default_size(GTK_WINDOW(window), 400, 300);
+  gtk_window_set_default_size(GTK_WINDOW(window), 600, 400);
   gtk_window_set_titlebar(GTK_WINDOW(window), titlebar);
 
   // Horizontal Main Box
@@ -65,13 +72,15 @@ static void windowActivate(GApplication *app){
 
   // Registors
   r0 = gtk_label_new("R0: 0000 0000 0000 0000");
-  r1 = gtk_label_new("R0: 0000 0000 0000 0000");
-  r2 = gtk_label_new("R0: 0000 0000 0000 0000");
-  r3 = gtk_label_new("R0: 0000 0000 0000 0000");
+  r1 = gtk_label_new("R1: 0000 0000 0000 0000");
+  r2 = gtk_label_new("R2: 0000 0000 0000 0000");
+  r3 = gtk_label_new("R3: 0000 0000 0000 0000");
+  exitStatus = gtk_label_new("Status:");
   gtk_box_append(GTK_BOX(box2), r0);
   gtk_box_append(GTK_BOX(box2), r1);
   gtk_box_append(GTK_BOX(box2), r2);
   gtk_box_append(GTK_BOX(box2), r3);
+  gtk_box_append(GTK_BOX(box2), exitStatus);
 
   gtk_window_present(GTK_WINDOW(window));
 }
