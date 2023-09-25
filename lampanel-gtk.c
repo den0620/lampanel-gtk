@@ -6,11 +6,30 @@
 //#include <gtksourceview/gtksource.h>
 
 static GtkWidget *lampanelInput;
-static GtkWidget *r0;
-static GtkWidget *r1;
-static GtkWidget *r2;
-static GtkWidget *r3;
+static GtkWidget *r0, *r1, *r2, *r3;
 static GtkWidget *exitStatus;
+static uint16_t lampsMatrix[8]; // Actually not a matrix, int 0000 0000 0000 0000 x8 rows
+
+
+static void generateLamps(GtkWidget *verticalRows){
+  GtkWidget *horizontalRows, *lampImage;
+
+  for(int i=0;i<8;i++){
+    horizontalRows = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
+    gtk_box_set_homogeneous(GTK_BOX(horizontalRows), TRUE);
+    gtk_box_append(GTK_BOX(verticalRows), horizontalRows);
+
+    for(int j=0;j<16;j++){
+      if((lampsMatrix[i] >> (15-j))%2 == 0){ // Lamp is off
+        lampImage = gtk_image_new_from_file("./icons/off.png");
+      } else { // Lamp is on
+        lampImage = gtk_image_new_from_file("./icons/on.png");
+      }
+      gtk_box_append(GTK_BOX(horizontalRows),lampImage);
+    }
+  }
+
+}
 
 static void runEmulation(){
   char *text;
@@ -33,7 +52,7 @@ static void runEmulation(){
 }
 
 static void windowActivate(GApplication *app){
-  GtkWidget *window, *box1, *box2, *box3, *runProgram, *titlebar;
+  GtkWidget *window, *box1, *box2, *box3, *runProgram, *titlebar, *verticalRows;
   GdkPixbuf *icon;
 
   // Play Button
@@ -60,6 +79,12 @@ static void windowActivate(GApplication *app){
   box3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_box_set_homogeneous(GTK_BOX(box3), TRUE);
   gtk_box_append(GTK_BOX(box1), box3);
+
+  // Lamps field
+  verticalRows = gtk_box_new(GTK_ORIENTATION_VERTICAL, 1);
+  gtk_box_set_homogeneous(GTK_BOX(verticalRows), TRUE);
+  gtk_box_append(GTK_BOX(box3), verticalRows);
+  generateLamps(verticalRows);
 
   // Code Input Field
   lampanelInput = gtk_text_view_new();
