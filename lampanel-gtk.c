@@ -8,24 +8,21 @@
 static GtkWidget *lampanelInput;
 static GtkWidget *r0, *r1, *r2, *r3;
 static GtkWidget *exitStatus;
+static GtkWidget *lampsBox;
 static uint16_t lampsMatrix[8]; // Actually not a matrix, int 0000 0000 0000 0000 x8 rows
 
 
-static void generateLamps(GtkWidget *verticalRows){
-  GtkWidget *horizontalRows, *lampImage;
+static void generateLamps(){
+  GtkWidget *lampImage;
 
   for(int i=0;i<8;i++){
-    horizontalRows = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 1);
-    gtk_box_set_homogeneous(GTK_BOX(horizontalRows), TRUE);
-    gtk_box_append(GTK_BOX(verticalRows), horizontalRows);
-
     for(int j=0;j<16;j++){
       if((lampsMatrix[i] >> (15-j))%2 == 0){ // Lamp is off
         lampImage = gtk_image_new_from_file("./icons/off.png");
       } else { // Lamp is on
         lampImage = gtk_image_new_from_file("./icons/on.png");
       }
-      gtk_box_append(GTK_BOX(horizontalRows),lampImage);
+      gtk_flow_box_append(GTK_FLOW_BOX(lampsBox),lampImage);
     }
   }
 
@@ -33,26 +30,31 @@ static void generateLamps(GtkWidget *verticalRows){
 
 static void runEmulation(){
   char *text;
-  int64_t registors;
+  int64_t *registors;
   GtkTextIter start, end;
-  GtkTextBuffer *buffer = gtk_text_view_get_buffer(lampanelInput);
+  GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(lampanelInput));
 
   gtk_text_buffer_get_bounds (buffer, &start, &end);
   text = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
 
   printf(text);
 
-  registors = runE97(text);
-
-  // unglue 64 bit int to 4 16 bit registors and print 'em
-
+  //registors = runE97(text);
+  // unglue 64 bit int to 4 16 bit registors and use 'em
   // code needed
 
-  g_free (text);
+  //lamp switching works like this:
+  //lampsMatrix[0] = 4;
+  //lampsMatrix[3] = 23;
+
+  gtk_flow_box_remove_all(GTK_FLOW_BOX(lampsBox));
+  generateLamps();
+
+  g_free(text);
 }
 
 static void windowActivate(GApplication *app){
-  GtkWidget *window, *box1, *box2, *box3, *runProgram, *titlebar, *verticalRows;
+  GtkWidget *window, *box1, *box2, *box3, *runProgram, *titlebar;
   GdkPixbuf *icon;
 
   // Play Button
@@ -81,10 +83,16 @@ static void windowActivate(GApplication *app){
   gtk_box_append(GTK_BOX(box1), box3);
 
   // Lamps field
-  verticalRows = gtk_box_new(GTK_ORIENTATION_VERTICAL, 1);
-  gtk_box_set_homogeneous(GTK_BOX(verticalRows), TRUE);
-  gtk_box_append(GTK_BOX(box3), verticalRows);
-  generateLamps(verticalRows);
+  // Времени потрачено на лампы: 9 часов
+  lampsBox = gtk_flow_box_new();
+  gtk_flow_box_set_homogeneous(GTK_FLOW_BOX(lampsBox), TRUE);
+  gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(lampsBox), 16);
+  gtk_flow_box_set_min_children_per_line(GTK_FLOW_BOX(lampsBox), 16);
+  gtk_flow_box_set_column_spacing(GTK_FLOW_BOX(lampsBox), 1);
+  gtk_flow_box_set_row_spacing(GTK_FLOW_BOX(lampsBox), 1);
+  gtk_flow_box_set_selection_mode(GTK_FLOW_BOX(lampsBox), GTK_SELECTION_NONE);
+  gtk_box_append(GTK_BOX(box3), lampsBox);
+  generateLamps();
 
   // Code Input Field
   lampanelInput = gtk_text_view_new();
