@@ -1,6 +1,6 @@
 #include <gtk/gtk.h>
 #include <stdint.h> // see E97-asm.h
-#include "E97-asm.h"
+//#include "E97-asm.h"
 //#include <gtksourceview/gtksource.h>
 
 static GtkWidget *lampanelInput;
@@ -44,17 +44,20 @@ static void runEmulation(){
   // lamp switching works like this:
   // lampsMatrix[0] = 4;
   // lampsMatrix[3] = 23;
-  // or like this:
-  registors = runE97(&lampsMatrix, text);
+
+  // Plan:
+  // Compile program entered by user
+  // Make func to run line by line
 
   // Update registors output
-  for(int i=0;i<4;i++){
-    // label = uint16_t(registors >> (16*i));
-  }
+  //for(int i=0;i<4;i++){
+  //  // label = uint16_t(registors >> (16*i));
+  //}
 
   // Update lampanel
-  gtk_flow_box_remove_all(GTK_FLOW_BOX(lampsBox));
-  generateLamps();
+  //gtk_flow_box_remove_all(GTK_FLOW_BOX(lampsBox));
+  //generateLamps();
+  // ^^^ needs to executed when interacting with lamps
 
   g_free(text);
 }
