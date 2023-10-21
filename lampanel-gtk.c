@@ -4,7 +4,7 @@
 //#include <gtksourceview/gtksource.h>
 
 static GtkWidget *lampanelInput;
-static GtkWidget *r0, *r1, *r2, *r3;
+static GtkWidget *r0, *r1, *r2, *r3, *pc, *sp, *ps;
 static GtkWidget *exitStatus;
 static GtkWidget *lampsBox;
 static GtkWidget *regsBox;
@@ -117,16 +117,23 @@ static void windowActivate(GApplication *app){
   gtk_flow_box_set_row_spacing(GTK_FLOW_BOX(regsBox), 0);
   gtk_flow_box_set_selection_mode(GTK_FLOW_BOX(regsBox), GTK_SELECTION_NONE);
   gtk_box_append(GTK_BOX(childHorizontalU), regsBox);
-  // Registors
+  // Registors + status
   r0 = gtk_label_new("R0: 0000 0000 0000 0000");
   r1 = gtk_label_new("R1: 0000 0000 0000 0000");
   r2 = gtk_label_new("R2: 0000 0000 0000 0000");
   r3 = gtk_label_new("R3: 0000 0000 0000 0000");
-  exitStatus = gtk_label_new("Status:");
+  pc = gtk_label_new("PC: 0000 0000 0000 0000");
+  sp = gtk_label_new("SP: 0000 0000 0000 0000");
+  ps = gtk_label_new("PS: 0000 0000 0000 0000");
+  exitStatus = gtk_label_new("Exit code:");
   gtk_flow_box_append(GTK_FLOW_BOX(regsBox), r0);
   gtk_flow_box_append(GTK_FLOW_BOX(regsBox), r1);
   gtk_flow_box_append(GTK_FLOW_BOX(regsBox), r2);
   gtk_flow_box_append(GTK_FLOW_BOX(regsBox), r3);
+  gtk_flow_box_append(GTK_FLOW_BOX(regsBox), pc);
+  gtk_flow_box_append(GTK_FLOW_BOX(regsBox), sp);
+  gtk_flow_box_append(GTK_FLOW_BOX(regsBox), ps);
+
   gtk_flow_box_append(GTK_FLOW_BOX(regsBox), exitStatus);
 
   // Code Input Field
