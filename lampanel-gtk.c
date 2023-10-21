@@ -63,7 +63,7 @@ static void runEmulation(){
 }
 
 static void windowActivate(GApplication *app){
-  GtkWidget *window, *box1, *box3, *runProgram, *titlebar;
+  GtkWidget *window, *mainVertical, *childHorizontalU, *childHorizontalL, *compiledOutput, *memoryOverview, *runProgram, *titlebar;
   GdkPixbuf *icon;
 
   // Play Button
@@ -81,15 +81,20 @@ static void windowActivate(GApplication *app){
   gtk_window_set_default_size(GTK_WINDOW(window), 300, 200);
   gtk_window_set_titlebar(GTK_WINDOW(window), titlebar);
 
-  // Horizontal Main Box
-  box1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  //gtk_box_set_homogeneous(GTK_BOX(box1), TRUE);
-  gtk_window_set_child(GTK_WINDOW(window), box1);
+  // Main vertical box > upper (childHorizontalU)
+  //                   > lower (childHorizontalL)
+  mainVertical = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  gtk_box_set_homogeneous(GTK_BOX(mainVertical), TRUE);
+  gtk_window_set_child(GTK_WINDOW(window), mainVertical);
 
-  // Vertical Child Box (Right)
-  box3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  gtk_box_set_homogeneous(GTK_BOX(box3), TRUE);
-  gtk_box_append(GTK_BOX(box1), box3);
+  // Horizontal Child Box (Upper) (for lamps & registor overview)
+  childHorizontalU = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  //gtk_box_set_homogeneous(GTK_BOX(childHorizontal), TRUE);
+  gtk_box_append(GTK_BOX(mainVertical), childHorizontalU);
+
+  // Horizontal Child Box (Lower) (for code & compiled & memory)
+  childHorizontalL = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  gtk_box_append(GTK_BOX(mainVertical), childHorizontalL);
 
   // Lamps field
   // Времени потрачено на лампы: 9 часов
@@ -100,12 +105,8 @@ static void windowActivate(GApplication *app){
   gtk_flow_box_set_column_spacing(GTK_FLOW_BOX(lampsBox), 0);
   gtk_flow_box_set_row_spacing(GTK_FLOW_BOX(lampsBox), 0);
   gtk_flow_box_set_selection_mode(GTK_FLOW_BOX(lampsBox), GTK_SELECTION_NONE);
-  gtk_box_append(GTK_BOX(box3), lampsBox);
+  gtk_box_append(GTK_BOX(childHorizontalU), lampsBox);
   generateLamps();
-
-  // Code Input Field
-  lampanelInput = gtk_text_view_new();
-  gtk_box_append(GTK_BOX(box3), lampanelInput);
 
   // Vertical Child Box (Left)
   regsBox = gtk_flow_box_new();
@@ -115,8 +116,7 @@ static void windowActivate(GApplication *app){
   gtk_flow_box_set_column_spacing(GTK_FLOW_BOX(regsBox), 0);
   gtk_flow_box_set_row_spacing(GTK_FLOW_BOX(regsBox), 0);
   gtk_flow_box_set_selection_mode(GTK_FLOW_BOX(regsBox), GTK_SELECTION_NONE);
-  gtk_box_append(GTK_BOX(box1), regsBox);
-
+  gtk_box_append(GTK_BOX(childHorizontalU), regsBox);
   // Registors
   r0 = gtk_label_new("R0: 0000 0000 0000 0000");
   r1 = gtk_label_new("R1: 0000 0000 0000 0000");
@@ -129,6 +129,18 @@ static void windowActivate(GApplication *app){
   gtk_flow_box_append(GTK_FLOW_BOX(regsBox), r3);
   gtk_flow_box_append(GTK_FLOW_BOX(regsBox), exitStatus);
 
+  // Code Input Field
+  lampanelInput = gtk_text_view_new();
+  gtk_box_append(GTK_BOX(childHorizontalL), lampanelInput);
+
+  // Compiled File Field
+  compiledOutput = gtk_text_view_new();
+  gtk_box_append(GTK_BOX(childHorizontalL), compiledOutput);
+
+  // Memory Overview Field
+  memoryOverview = gtk_text_view_new();
+  gtk_box_append(GTK_BOX(childHorizontalL), memoryOverview);
+
   gtk_window_present(GTK_WINDOW(window));
 }
 
@@ -136,7 +148,7 @@ int main(int argc, char **argv){
   GtkApplication *window;
   int status;
 
-  window = gtk_application_new("degroland.den0620.lampanel-gtk", G_APPLICATION_DEFAULT_FLAGS);
+  window = gtk_application_new("site.degroland.lampanel-gtk", G_APPLICATION_DEFAULT_FLAGS);
   g_signal_connect(window, "activate", G_CALLBACK(windowActivate), NULL);
   status = g_application_run(G_APPLICATION(window), argc, argv);
   g_object_unref(window);
