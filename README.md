@@ -6,12 +6,23 @@ E97 Emulator rebuilt from from scratch in C + GTK 4, inspired by [K. Polyakov's 
 - [x] App is compiling
 - [x] App is opening
 - [x] "Run" button
-- [x] Code input
+- [ ] Code input
 - [ ] Code being ran
-- [ ] By-registor output
+- [x] By-registor output
 - [x] Lamps field
 - [ ] Debugging info??
 
 # Time bounds (WHEN DONE????)
 Some time in future
+
+# Building & Running
+```
+#####################################################################################################################
+# There is no cmake, program should be compiled with gcc and `gtksourceview5` (aur) should be installed             #
+# => gcc $(pkg-config --cflags gtksourceview-5) -o lampanel-gtk lampanel-gtk.c $(pkg-config --libs gtksourceview-5) #
+# (I use gcc so have no idea how to compile it in clang or etc)                                                     #
+#                                                                                                                   #
+# Tested with EndeavourOS + KDE (Wayland) + zen kernel                                                              #
+#####################################################################################################################
+```
 

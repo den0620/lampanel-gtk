@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
 #include <stdint.h>
 #include <stdlib.h>
-//#include <gtksourceview/gtksource.h>
+#include <gtksourceview/gtksource.h>
 
 static GtkWidget *lampanelInput, *lampImage;
 static uint16_t r0, r1, r2, r3, pc, sp, ps;
