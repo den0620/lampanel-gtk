@@ -196,7 +196,7 @@ static void windowActivate(GApplication *app){
   codeBuffer = gtk_source_buffer_new(NULL);
   //codeLang = gtk_source_language();
   codeLangMan = gtk_source_language_manager_new();
-  printf(gtk_source_language_manager_get_language_ids(codeLangMan));
+  //printf(gtk_source_language_manager_get_language_ids(codeLangMan));
 
   gtk_source_buffer_set_highlight_syntax(GTK_SOURCE_BUFFER(codeBuffer), TRUE);
   //gtk_source_buffer_ensure_highlight(GTK_SOURCE_BUFFER(codeBuffer), TRUE);
