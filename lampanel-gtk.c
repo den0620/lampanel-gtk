@@ -4,6 +4,7 @@
 #include <gtksourceview/gtksource.h>
 
 static GtkWidget *lampanelInput, *lampImage;
+static GtkSourceBuffer *codeBuffer;
 static uint16_t r0, r1, r2, r3, pc, sp, ps;
 static GtkWidget *lampsBox, *regsBox, *CVNames, *CVBin, *CVHex, *CVuDec, *CVsDec;
 static uint16_t lampsMatrix[8]; // Actually not a matrix, int 0000 0000 0000 0000 x8 rows
@@ -112,7 +113,7 @@ static void runEmulation(){
 }
 
 static void windowActivate(GApplication *app){
-  GtkWidget *window, *mainVertical, *childHorizontalU, *childHorizontalL, *compiledOutput, *mainHorizontalR, *memoryOverview, *runProgram, *titlebar;
+  GtkWidget *window, *mainVertical, *childHorizontalU, *childHorizontalL, *compiledOutput, *mainHorizontalR, *memoryOverview, *runProgram, *titlebar, *scrollWindow;
   GdkPixbuf *icon;
 
   // Play Button
@@ -128,7 +129,8 @@ static void windowActivate(GApplication *app){
   // Window
   window = gtk_application_window_new(GTK_APPLICATION(app));
   gtk_window_set_title(GTK_WINDOW(window), "Lampanel GTK");
-  gtk_window_set_icon_name(GTK_WINDOW(window), "application-x-executable");
+  //gtk_window_set_icon_name(GTK_WINDOW(window), "application-x-executable");
+  gtk_window_set_icon_name(GTK_WINDOW(window), "./icons/on.png");
   gtk_window_set_default_size(GTK_WINDOW(window), 300, 200);
   gtk_window_set_titlebar(GTK_WINDOW(window), titlebar);
   printf("window\n");
@@ -136,18 +138,19 @@ static void windowActivate(GApplication *app){
   // Main vertical box / > upper (childHorizontalU)
   //                   \ > lower (childHorizontalL)
   mainVertical = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  //gtk_box_set_homogeneous(GTK_BOX(mainVertical), TRUE);
+  gtk_box_set_homogeneous(GTK_BOX(mainVertical), TRUE);
   gtk_window_set_child(GTK_WINDOW(window), mainVertical);
   printf("mainVertical\n");
 
   // Horizontal Child Box (Upper) (for lamps & registor overview)
   childHorizontalU = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  gtk_box_set_homogeneous(GTK_BOX(childHorizontalU), TRUE);
+  gtk_box_set_homogeneous(GTK_BOX(childHorizontalU), FALSE);
   gtk_box_append(GTK_BOX(mainVertical), childHorizontalU);
   printf("mainHorizontal\n");
 
   // Horizontal Child Box (Lower) (for code & compiled & memory)
   childHorizontalL = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  gtk_box_set_homogeneous(GTK_BOX(childHorizontalL), TRUE);
   gtk_box_append(GTK_BOX(mainVertical), childHorizontalL);
   printf("childHorizontalL\n");
 
@@ -159,6 +162,7 @@ static void windowActivate(GApplication *app){
   gtk_flow_box_set_column_spacing(GTK_FLOW_BOX(lampsBox), 0);
   gtk_flow_box_set_row_spacing(GTK_FLOW_BOX(lampsBox), 0);
   gtk_flow_box_set_selection_mode(GTK_FLOW_BOX(lampsBox), GTK_SELECTION_NONE);
+  gtk_widget_set_hexpand(GTK_WIDGET(lampsBox), TRUE);
   gtk_box_append(GTK_BOX(childHorizontalU), lampsBox);
   generateLamps();
   printf("lampsBox\n");
@@ -168,6 +172,7 @@ static void windowActivate(GApplication *app){
   //                      v      v     v     v      v 
   //                   CVNames CVbin CVHex CVuDec CVsDec
   mainHorizontalR = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  gtk_box_set_homogeneous(GTK_BOX(mainHorizontalR), FALSE);
   //gtk_flow_box_set_homogeneous(GTK_FLOW_BOX(regsBox), TRUE);//gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(regsBox), 1);//gtk_flow_box_set_min_children_per_line(GTK_FLOW_BOX(regsBox), 1);//gtk_flow_box_set_column_spacing(GTK_FLOW_BOX(regsBox), 0);//gtk_flow_box_set_row_spacing(GTK_FLOW_BOX(regsBox), 0);//gtk_flow_box_set_selection_mode(GTK_FLOW_BOX(regsBox), GTK_SELECTION_NONE);
   gtk_box_append(GTK_BOX(childHorizontalU), mainHorizontalR);
   printf("mainHorizontalR(ight)\n");
@@ -211,9 +216,20 @@ static void windowActivate(GApplication *app){
   generateValues();
 
   // Code Input Field
-  lampanelInput = gtk_text_view_new();
-  gtk_box_append(GTK_BOX(childHorizontalL), lampanelInput);
-  printf("lampanelInput\n");
+  //lampanelInput = gtk_text_view_new();
+  //gtk_box_append(GTK_BOX(childHorizontalL), lampanelInput);
+  //printf("lampanelInput\n");
+  codeBuffer = gtk_source_buffer_new(NULL);
+  lampanelInput = gtk_source_view_new_with_buffer(codeBuffer);
+  //lampanelInput = gtk_source_view_new();
+  gtk_source_view_set_show_line_numbers(GTK_SOURCE_VIEW(lampanelInput), TRUE);
+  scrollWindow = gtk_scrolled_window_new();
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollWindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scrollWindow), 100);
+  gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(scrollWindow), 200);
+  gtk_scrolled_window_set_kinetic_scrolling(GTK_SCROLLED_WINDOW(scrollWindow), TRUE);
+  gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrollWindow), lampanelInput);
+  gtk_box_append(GTK_BOX(childHorizontalL), scrollWindow);
 
   // Compiled File Field
   compiledOutput = gtk_text_view_new();
