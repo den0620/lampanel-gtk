@@ -5,9 +5,14 @@
 
 static GtkWidget *lampanelInput, *lampImage;
 static GtkSourceBuffer *codeBuffer;
+static GtkSourceLanguageManager *codeLangMan;
+static GtkSourceLanguage *codeLang;
 static uint16_t r0, r1, r2, r3, pc, sp, ps;
 static GtkWidget *lampsBox, *regsBox, *CVNames, *CVBin, *CVHex, *CVuDec, *CVsDec;
 static uint16_t lampsMatrix[8]; // Actually not a matrix, int 0000 0000 0000 0000 x8 rows
+
+
+// Functions `generateLamps` or/and `generateValues` should be ran every time there is a change to `lampsMatrix` or/and registors
 
 
 static void generateLamps(){
@@ -17,11 +22,12 @@ static void generateLamps(){
   //   0000_0001,  == ooooooo+ ==    1,
   //   0000_0110 ]    ooooo++o       6 ]
   // lampsMatrix is 16x8, not 8x3
+  gtk_flow_box_remove_all(GTK_FLOW_BOX(lampsBox));
   for(int i=0;i<8;i++){
     for(int j=0;j<16;j++){
-      if((lampsMatrix[i] >> (15-j))%2 == 0){ // Lamp is off
+      if((lampsMatrix[i] >> (15-j))%2 == 0){
         lampImage = gtk_image_new_from_file("./icons/off.png");
-      } else { // Lamp is on
+      } else {
         lampImage = gtk_image_new_from_file("./icons/on.png");
       }
       gtk_flow_box_append(GTK_FLOW_BOX(lampsBox),lampImage);
@@ -30,55 +36,40 @@ static void generateLamps(){
 }
 
 
+
+
 static void generateValues(){
   // ~CVNames~ CVBin CVHex CVuDec CVsDec
   uint16_t values[7] = {r0,r1,r2,r3,pc,sp,ps};
-  // CVBin
   gtk_flow_box_remove_all(GTK_FLOW_BOX(CVBin));
-  for(int num=0;num<7;num++){
-    GtkWidget *label;
-    char buf[17] = {'\0'};
-    for(int i=15;i>=0;i--){
-      buf[15-i] = '0' + ((values[num] >> i) & 1);
-    }
-    label = gtk_label_new(buf);
-    gtk_flow_box_append(GTK_FLOW_BOX(CVBin), label);
-    //g_free(label);
-  }
-  // CVHex
   gtk_flow_box_remove_all(GTK_FLOW_BOX(CVHex));
-  for(int num=0;num<7;num++){
-    GtkWidget *label;
-    char buf[5] = {'\0'};
-    char table[17] = "0123456789ABCDEF";
-    for(int i=3;i>=0;i--){
-      buf[3-i] = table[((values[num] >> (4*i)) & 0xF)];
-    }
-    label = gtk_label_new(buf);
-    gtk_flow_box_append(GTK_FLOW_BOX(CVHex), label);
-    //g_free(label);
-  }
-  // CVuDec
   gtk_flow_box_remove_all(GTK_FLOW_BOX(CVuDec));
-  for(int num=0;num<7;num++){
-    GtkWidget *label;
-    char buf[8];
-    sprintf(buf, "%d", values[num]);
-    label = gtk_label_new(buf);
-    gtk_flow_box_append(GTK_FLOW_BOX(CVuDec), label);
-    //g_free(label);
-  }
-  // CVsDec
   gtk_flow_box_remove_all(GTK_FLOW_BOX(CVsDec));
   for(int num=0;num<7;num++){
-    GtkWidget *label;
-    char buf[8];
-    sprintf(buf, "%d", (int16_t)values[num]);
-    label = gtk_label_new(buf);
-    gtk_flow_box_append(GTK_FLOW_BOX(CVsDec), label);
-    //g_free(label);
+    GtkWidget *labelB, *labelH, *labelUD, *labelSD;
+    char bufB[17] = "\0", bufH[5], bufUD[8], bufSD[8];
+    char table[17] = "0123456789ABCDEF";
+    for(int i=15;i>=0;i--){
+      bufB[15-i] = '0' + ((values[num] >> i) & 1);
+      if(i%4==0){
+        bufH[3-i/4] = table[((values[num] >> (i)) & 0xF)];
+      }
+    }
+    sprintf(bufUD, "%d", values[num]);
+    sprintf(bufSD, "%d", (int16_t)values[num]);
+    labelB = gtk_label_new(bufB);
+    labelH = gtk_label_new(bufH);
+    labelUD = gtk_label_new(bufUD);
+    labelSD = gtk_label_new(bufSD);
+    gtk_flow_box_append(GTK_FLOW_BOX(CVBin), labelB);
+    gtk_flow_box_append(GTK_FLOW_BOX(CVHex), labelH);
+    gtk_flow_box_append(GTK_FLOW_BOX(CVuDec), labelUD);
+    gtk_flow_box_append(GTK_FLOW_BOX(CVsDec), labelSD);
   }
 }
+
+
+
 
 static void runEmulation(){
   char *text;
@@ -93,21 +84,10 @@ static void runEmulation(){
 
   // lamp switching works like this:
   // lampsMatrix[0] = 4;
-  // lampsMatrix[3] = 23;
 
   // Plan:
   // Compile program entered by user
   // Make func to run line by line
-
-  // Update registors output
-  //for(int i=0;i<4;i++){
-  //  // label = uint16_t(registors >> (16*i));
-  //}
-
-  // Update lampanel
-  //gtk_flow_box_remove_all(GTK_FLOW_BOX(lampsBox));
-  //generateLamps();
-  // ^^^ needs to executed when interacting with lamps
 
   g_free(text);
 }
@@ -115,6 +95,7 @@ static void runEmulation(){
 static void windowActivate(GApplication *app){
   GtkWidget *window, *mainVertical, *childHorizontalU, *childHorizontalL, *compiledOutput, *mainHorizontalR, *memoryOverview, *runProgram, *titlebar, *scrollWindow;
   GdkPixbuf *icon;
+
 
   // Play Button
   runProgram = gtk_button_new_from_icon_name("media-playback-start-symbolic");
@@ -159,8 +140,8 @@ static void windowActivate(GApplication *app){
   gtk_flow_box_set_homogeneous(GTK_FLOW_BOX(lampsBox), TRUE);
   gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(lampsBox), 16);
   gtk_flow_box_set_min_children_per_line(GTK_FLOW_BOX(lampsBox), 16);
-  gtk_flow_box_set_column_spacing(GTK_FLOW_BOX(lampsBox), 0);
-  gtk_flow_box_set_row_spacing(GTK_FLOW_BOX(lampsBox), 0);
+  gtk_flow_box_set_column_spacing(GTK_FLOW_BOX(lampsBox), -10);
+  gtk_flow_box_set_row_spacing(GTK_FLOW_BOX(lampsBox), -10); // Set -100 if you want segfault)
   gtk_flow_box_set_selection_mode(GTK_FLOW_BOX(lampsBox), GTK_SELECTION_NONE);
   gtk_widget_set_hexpand(GTK_WIDGET(lampsBox), TRUE);
   gtk_box_append(GTK_BOX(childHorizontalU), lampsBox);
@@ -173,7 +154,6 @@ static void windowActivate(GApplication *app){
   //                   CVNames CVbin CVHex CVuDec CVsDec
   mainHorizontalR = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_set_homogeneous(GTK_BOX(mainHorizontalR), FALSE);
-  //gtk_flow_box_set_homogeneous(GTK_FLOW_BOX(regsBox), TRUE);//gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(regsBox), 1);//gtk_flow_box_set_min_children_per_line(GTK_FLOW_BOX(regsBox), 1);//gtk_flow_box_set_column_spacing(GTK_FLOW_BOX(regsBox), 0);//gtk_flow_box_set_row_spacing(GTK_FLOW_BOX(regsBox), 0);//gtk_flow_box_set_selection_mode(GTK_FLOW_BOX(regsBox), GTK_SELECTION_NONE);
   gtk_box_append(GTK_BOX(childHorizontalU), mainHorizontalR);
   printf("mainHorizontalR(ight)\n");
   // Names
@@ -187,42 +167,43 @@ static void windowActivate(GApplication *app){
   gtk_box_append(GTK_BOX(CVNames), gtk_label_new("PC"));
   gtk_box_append(GTK_BOX(CVNames), gtk_label_new("SP"));
   gtk_box_append(GTK_BOX(CVNames), gtk_label_new("PS"));
-  // Binary Values
+  // Values
   printf("cvnames\n");
   CVBin = gtk_flow_box_new();
   gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(CVBin), 1);
   gtk_flow_box_set_selection_mode(GTK_FLOW_BOX(CVBin), GTK_SELECTION_NONE);
   gtk_box_append(GTK_BOX(mainHorizontalR), CVBin);
   printf("cvbin\n");
-  // Hexadecimal Values
   CVHex = gtk_flow_box_new();
   gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(CVHex), 1);
   gtk_flow_box_set_selection_mode(GTK_FLOW_BOX(CVHex), GTK_SELECTION_NONE);
   gtk_box_append(GTK_BOX(mainHorizontalR), CVHex);
   printf("cvhex\n");
-  // Unsigned Decimal Values
   CVuDec = gtk_flow_box_new();
   gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(CVuDec), 1);
   gtk_flow_box_set_selection_mode(GTK_FLOW_BOX(CVuDec), GTK_SELECTION_NONE);
   gtk_box_append(GTK_BOX(mainHorizontalR), CVuDec);
   printf("cvudec\n");
-  // Signed Decimal Values
   CVsDec = gtk_flow_box_new();
   gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(CVsDec), 1);
   gtk_flow_box_set_selection_mode(GTK_FLOW_BOX(CVsDec), GTK_SELECTION_NONE);
   gtk_box_append(GTK_BOX(mainHorizontalR), CVsDec);
   printf("cvsdec\n");
-  // Generate All Values
   generateValues();
 
+
   // Code Input Field
-  //lampanelInput = gtk_text_view_new();
-  //gtk_box_append(GTK_BOX(childHorizontalL), lampanelInput);
-  //printf("lampanelInput\n");
   codeBuffer = gtk_source_buffer_new(NULL);
+  //codeLang = gtk_source_language();
+  codeLangMan = gtk_source_language_manager_new();
+  printf(gtk_source_language_manager_get_language_ids(codeLangMan));
+
+  gtk_source_buffer_set_highlight_syntax(GTK_SOURCE_BUFFER(codeBuffer), TRUE);
+  //gtk_source_buffer_ensure_highlight(GTK_SOURCE_BUFFER(codeBuffer), TRUE);
+  //gtk_source_buffer_set_language(GTK_SOURCE_BUFFER(codeBuffer), GTK_SOURCE_LANGUAGE(codeLang));
   lampanelInput = gtk_source_view_new_with_buffer(codeBuffer);
-  //lampanelInput = gtk_source_view_new();
   gtk_source_view_set_show_line_numbers(GTK_SOURCE_VIEW(lampanelInput), TRUE);
+  // Code Input Scroll Window
   scrollWindow = gtk_scrolled_window_new();
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollWindow), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scrollWindow), 100);
