@@ -1,6 +1,8 @@
 # lampanel-gtk
 E97 Emulator rebuilt from scratch in C + GTK 4, inspired by [K. Polyakov's "Лампанель"](https://kpolyakov.spb.ru/prog/lamp.htm).
 
+![Current Lampanel](./lampanel.png)
+
 # Current status
 
 - [x] App is compiling
