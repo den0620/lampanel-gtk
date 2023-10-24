@@ -1,7 +1,7 @@
 # lampanel-gtk
 E97 Emulator rebuilt from scratch in C + GTK 4 (gtksourceview), inspired by [K. Polyakov's "Лампанель"](https://kpolyakov.spb.ru/prog/lamp.htm).
 
-![Current Lampanel view](https://github.com/den0620/lampanel-gtk/blob/main/lampanel.png?raw=true)
+![Current Lampanel view](https://github.com/den0620/lampanel-gtk/blob/main/lampanel-gtk.png)
 
 # Current status
 
