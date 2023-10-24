@@ -7,6 +7,8 @@ E97 Emulator rebuilt from scratch in C + GTK 4, inspired by [K. Polyakov's "Ла
 - [x] App is opening
 - [x] "Run" button
 - [x] Code input
+- [x] Code Highlighting
+- [ ] Code Compilation
 - [ ] Code being ran
 - [x] By-registor output
 - [x] Lamps field

@@ -194,13 +194,20 @@ static void windowActivate(GApplication *app){
 
   // Code Input Field
   codeBuffer = gtk_source_buffer_new(NULL);
-  //codeLang = gtk_source_language();
   codeLangMan = gtk_source_language_manager_new();
-  //printf(gtk_source_language_manager_get_language_ids(codeLangMan));
+  gtk_source_language_manager_append_search_path(codeLangMan, (const gchar *)("./langs/"));
+  //gtk_source_language_manager_get_language_from_file(codeLangMan, langsPath); // outdated
+  codeLang = gtk_source_language_manager_get_language(codeLangMan, "asm");
+  if(codeLang == NULL){
+  	printf("Something wrong with codeLang (==NULL)");
+  }
 
+  gtk_text_buffer_set_enable_undo(GTK_TEXT_BUFFER(codeBuffer), TRUE);
   gtk_source_buffer_set_highlight_syntax(GTK_SOURCE_BUFFER(codeBuffer), TRUE);
-  //gtk_source_buffer_ensure_highlight(GTK_SOURCE_BUFFER(codeBuffer), TRUE);
-  //gtk_source_buffer_set_language(GTK_SOURCE_BUFFER(codeBuffer), GTK_SOURCE_LANGUAGE(codeLang));
+  /* //gtk_source_buffer_ensure_highlight(GTK_SOURCE_BUFFER(codeBuffer), TRUE); */
+  gtk_source_buffer_set_highlight_matching_brackets(GTK_SOURCE_BUFFER(codeBuffer), TRUE);
+  gtk_source_buffer_set_highlight_syntax(GTK_SOURCE_BUFFER(codeBuffer), TRUE);
+  gtk_source_buffer_set_language(GTK_SOURCE_BUFFER(codeBuffer), GTK_SOURCE_LANGUAGE(codeLang));
   lampanelInput = gtk_source_view_new_with_buffer(codeBuffer);
   gtk_source_view_set_show_line_numbers(GTK_SOURCE_VIEW(lampanelInput), TRUE);
   // Code Input Scroll Window

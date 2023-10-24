@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language id="asm" name="Assembly" version="2.0" _section="Source">
+  <metadata>
+    <property name="mimetypes">text/x-c;text/x-csrc</property>
+    <property name="globs">*.asm</property>
+  </metadata>
+  <styles>
+    <style id="comment" name="Comment" map-to="def:comment"/>
+    <style id="string" name="String" map-to="def:string"/>
+    <style id="escaped-character" name="Escaped Character" map-to="def:special-char"/>
+    <style id="char" name="Character" map-to="def:character"/>
+    <style id="keyword" name="Keyword" map-to="def:keyword"/>
+    <style id="type" name="Data Type" map-to="def:type"/>
+  </styles>
+  <definitions>
+    <context id="asm">
+      <include>
+        <context id="comment" style-ref="comment">
+          <start>;</start>
+          <end>$</end>
+        </context>
+        <context id="string">
+          <start>"</start>
+          <end>"</end>
+          <include>
+            <context id="escape" style-ref="escaped-character">
+              <match>\\.</match>
+            </context>
+          </include>
+        </context>
+        <context id="char" end-at-line-end="true" style-ref="string">
+          <start>'</start>
+          <end>'</end>
+          <include>
+            <context ref="escape"/>
+          </include>
+        </context>
+        <context id="keywords" style-ref="keyword">
+          <keyword>stop</keyword>
+          <keyword>nop</keyword>
+          <keyword>mov</keyword>
+          <keyword>add</keyword>
+          <keyword>mul</keyword>
+          <keyword>sub</keyword>
+          <keyword>div</keyword>
+          <keyword>in</keyword>
+          <keyword>out</keyword>
+          <keyword>not</keyword>
+          <keyword>and</keyword>
+          <keyword>or</keyword>
+          <keyword>xor</keyword>
+          <keyword>shl</keyword>
+          <keyword>shr</keyword>
+          <keyword>sar</keyword>
+	  <keyword>rol</keyword>
+	  <keyword>ror</keyword>
+	  <keyword>rcl</keyword>
+	  <keyword>rcr</keyword>
+	  <keyword>jmp</keyword>
+	  <keyword>jge</keyword>
+	  <keyword>jl</keyword>
+	  <keyword>jnz</keyword>
+	  <keyword>jz</keyword>
+	  <keyword>jle</keyword>
+	  <keyword>jg</keyword>
+	  <keyword>cmp</keyword>
+	  <keyword>call</keyword>
+	  <keyword>ret</keyword>
+	  <keyword>push</keyword>
+	  <keyword>pop</keyword>
+	  <keyword>system</keyword>
+	  <keyword>movb</keyword>
+	  <keyword>cmpb</keyword>
+	  <keyword>shlb</keyword>
+	  <keyword>shrb</keyword>
+	  <keyword>sarb</keyword>
+	  <keyword>rolb</keyword>
+	  <keyword>rorb</keyword>
+	  <keyword>rclb</keyword>
+	  <keyword>rcrb</keyword>
+	  <keyword>swapb</keyword>
+        </context>
+        <context id="types" style-ref="type">
+          <keyword>r0</keyword>
+          <keyword>r1</keyword>
+          <keyword>r2</keyword>
+          <keyword>r3</keyword>
+          <keyword>p0</keyword>
+          <keyword>p1</keyword>
+          <keyword>p2</keyword>
+          <keyword>p3</keyword>
+          <keyword>p4</keyword>
+          <keyword>p5</keyword>
+          <keyword>p6</keyword>
+          <keyword>p7</keyword>
+        </context>
+      </include>
+    </context>
+  </definitions>
+</language>
+
