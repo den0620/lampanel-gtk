@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <gtksourceview/gtksource.h>
 
+static bool debugMode = false;
 static GtkWidget *lampanelInput, *lampImage;
 static GtkSourceBuffer *codeBuffer;
 static GtkSourceLanguageManager *codeLangMan;
@@ -15,6 +16,30 @@ static uint16_t lampsMatrix[8]; // Actually not a matrix, int 0000 0000 0000 000
 // Functions `generateLamps` or/and `generateValues` should be ran every time there is a change to `lampsMatrix` or/and registors
 
 
+typedef struct {
+    gboolean option;
+} lampanelgtkOptions;
+
+static gboolean parse_options(lampanelgtkOptions *options, int *argc, char ***argv){
+  GOptionContext *context;
+  GOptionEntry entries[] = {
+    { "debug", 'd', 0, G_OPTION_ARG_NONE, &(options->option), "Enable debug", NULL },
+    { NULL }
+  };
+  // Create a new option context
+  context = g_option_context_new("lampanel-gtk");
+  g_option_context_add_main_entries(context, entries, NULL);
+  // Parse the command line arguments
+  if (!g_option_context_parse(context, argc, argv, NULL)) {
+    g_option_context_free(context);
+    debugMode = false;
+    return FALSE;
+  }
+  g_option_context_free(context);
+  debugMode = true;
+  return TRUE;
+}
+
 static void generateLamps(){
   GtkWidget *lampImage;
   // Lamps changing by lampsMatrix like this: (8x3 example)
@@ -26,9 +51,9 @@ static void generateLamps(){
   for(int i=0;i<8;i++){
     for(int j=0;j<16;j++){
       if((lampsMatrix[i] >> (15-j))%2 == 0){
-        lampImage = gtk_image_new_from_file("./icons/off.png");
+        lampImage = gtk_image_new_from_file("./assets/icons/off.png");
       } else {
-        lampImage = gtk_image_new_from_file("./icons/on.png");
+        lampImage = gtk_image_new_from_file("./assets/icons/on.png");
       }
       gtk_flow_box_append(GTK_FLOW_BOX(lampsBox),lampImage);
     }
@@ -82,6 +107,7 @@ static void runEmulation(){
   // ^^^ IDK what happens here I took it from stackoverflow and it somehow works
   // related to code input / gtk_text_view
 
+
   // lamp switching works like this:
   // lampsMatrix[0] = 4;
 
@@ -89,6 +115,10 @@ static void runEmulation(){
   // Compile program entered by user
   // Make func to run line by line
 
+  
+  printf(text);
+  generateValues();
+  generateLamps();
   g_free(text);
 }
 
@@ -111,7 +141,7 @@ static void windowActivate(GApplication *app){
   window = gtk_application_window_new(GTK_APPLICATION(app));
   gtk_window_set_title(GTK_WINDOW(window), "Lampanel GTK");
   //gtk_window_set_icon_name(GTK_WINDOW(window), "application-x-executable");
-  gtk_window_set_icon_name(GTK_WINDOW(window), "./icons/on.png");
+  gtk_window_set_icon_name(GTK_WINDOW(window), "./assets/icons/on.png");
   gtk_window_set_default_size(GTK_WINDOW(window), 300, 200);
   gtk_window_set_titlebar(GTK_WINDOW(window), titlebar);
   printf("window\n");
@@ -194,14 +224,16 @@ static void windowActivate(GApplication *app){
 
   // Code Input Field
   codeBuffer = gtk_source_buffer_new(NULL);
+  //codeLangStyle = 
   codeLangMan = gtk_source_language_manager_new();
-  gtk_source_language_manager_append_search_path(codeLangMan, (const gchar *)("./langs/"));
+  gtk_source_language_manager_append_search_path(codeLangMan, (const gchar *)("./assets/langs/"));
   //gtk_source_language_manager_get_language_from_file(codeLangMan, langsPath); // outdated
   codeLang = gtk_source_language_manager_get_language(codeLangMan, "asm");
   if(codeLang == NULL){
   	printf("Something wrong with codeLang (==NULL)");
   }
 
+  //gtk_source_buffer_set_style_scheme(GTK_SOURCE_BUFFER(codeBuffer), codeLangStyle);
   gtk_text_buffer_set_enable_undo(GTK_TEXT_BUFFER(codeBuffer), TRUE);
   gtk_source_buffer_set_highlight_syntax(GTK_SOURCE_BUFFER(codeBuffer), TRUE);
   /* //gtk_source_buffer_ensure_highlight(GTK_SOURCE_BUFFER(codeBuffer), TRUE); */
@@ -235,6 +267,17 @@ static void windowActivate(GApplication *app){
 int main(int argc, char **argv){
   GtkApplication *window;
   int status;
+
+  lampanelgtkOptions options;
+
+  if (!parse_options(&options, &argc, &argv)) {
+        // Error occured while parcing options
+        return 1;
+  }
+
+  if(debugMode){
+    printf("[info] debugMode enabled\n");
+  }
 
   window = gtk_application_new("site.degroland.lampanel-gtk", G_APPLICATION_DEFAULT_FLAGS);
   g_signal_connect(window, "activate", G_CALLBACK(windowActivate), NULL);
