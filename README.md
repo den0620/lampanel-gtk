@@ -17,7 +17,7 @@ E97 Emulator rebuilt from scratch in C + GTK 4 (gtksourceview), inspired by [K. 
 - [ ] Debugging info??
 
 # Time bounds (WHEN DONE????)
-Some time in future
+Never? Idk I realised I dont like GTK
 
 # Building & Running
 ```
