@@ -9,36 +9,13 @@ static GtkSourceBuffer *codeBuffer;
 static GtkSourceLanguageManager *codeLangMan;
 static GtkSourceLanguage *codeLang;
 static uint16_t r0, r1, r2, r3, pc, sp, ps;
-static GtkWidget *lampsBox, *regsBox, *CVNames, *CVBin, *CVHex, *CVuDec, *CVsDec;
+static GtkWidget *lampsBox, *regsBox, *CVNames, *CVBin, *CVHex, *CVuDec, *CVsDec, *SSlider;
 static uint16_t lampsMatrix[8]; // Actually not a matrix, int 0000 0000 0000 0000 x8 rows
+static GtkAdjustment *SAdjustment;
 
 
 // Functions `generateLamps` or/and `generateValues` should be ran every time there is a change to `lampsMatrix` or/and registors
 
-
-typedef struct {
-    gboolean option;
-} lampanelgtkOptions;
-
-static gboolean parse_options(lampanelgtkOptions *options, int *argc, char ***argv){
-  GOptionContext *context;
-  GOptionEntry entries[] = {
-    { "debug", 'd', 0, G_OPTION_ARG_NONE, &(options->option), "Enable debug", NULL },
-    { NULL }
-  };
-  // Create a new option context
-  context = g_option_context_new("lampanel-gtk");
-  g_option_context_add_main_entries(context, entries, NULL);
-  // Parse the command line arguments
-  if (!g_option_context_parse(context, argc, argv, NULL)) {
-    g_option_context_free(context);
-    debugMode = false;
-    return FALSE;
-  }
-  g_option_context_free(context);
-  debugMode = true;
-  return TRUE;
-}
 
 static void generateLamps(){
   GtkWidget *lampImage;
@@ -107,7 +84,6 @@ static void runEmulation(){
   // ^^^ IDK what happens here I took it from stackoverflow and it somehow works
   // related to code input / gtk_text_view
 
-
   // lamp switching works like this:
   // lampsMatrix[0] = 4;
 
@@ -115,7 +91,7 @@ static void runEmulation(){
   // Compile program entered by user
   // Make func to run line by line
 
-  
+  printf("%f", gtk_adjustment_get_value(SAdjustment));
   printf(text);
   generateValues();
   generateLamps();
@@ -125,6 +101,11 @@ static void runEmulation(){
 static void windowActivate(GApplication *app){
   GtkWidget *window, *mainVertical, *childHorizontalU, *childHorizontalL, *compiledOutput, *mainHorizontalR, *memoryOverview, *runProgram, *titlebar, *scrollWindow;
   GdkPixbuf *icon;
+
+
+  GtkWidget *separatorH1 = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+  GtkWidget *separatorV1 = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
+  GtkWidget *separatorV2 = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
 
 
   // Play Button
@@ -159,6 +140,8 @@ static void windowActivate(GApplication *app){
   gtk_box_append(GTK_BOX(mainVertical), childHorizontalU);
   printf("mainHorizontal\n");
 
+  //gtk_box_append(GTK_BOX(mainVertical), separatorH1);
+
   // Horizontal Child Box (Lower) (for code & compiled & memory)
   childHorizontalL = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_set_homogeneous(GTK_BOX(childHorizontalL), TRUE);
@@ -178,14 +161,15 @@ static void windowActivate(GApplication *app){
   generateLamps();
   printf("lampsBox\n");
 
-  // Box for registors <-------------------------------> (mainHorizontalR)
-  //                      |      |     |     |      |
-  //                      v      v     v     v      v 
-  //                   CVNames CVbin CVHex CVuDec CVsDec
+  // Box for registors <-------------------------------- ------> (mainHorizontalR)
+  //                      |      |     |     |      |       |
+  //                      v      v     v     v      v       v
+  //                   CVNames CVbin CVHex CVuDec CVsDec SSlider
   mainHorizontalR = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_set_homogeneous(GTK_BOX(mainHorizontalR), FALSE);
   gtk_box_append(GTK_BOX(childHorizontalU), mainHorizontalR);
   printf("mainHorizontalR(ight)\n");
+  gtk_box_append(GTK_BOX(mainHorizontalR), separatorV1);
   // Names
   CVNames = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   gtk_box_set_homogeneous(GTK_BOX(CVNames), TRUE);
@@ -220,6 +204,25 @@ static void windowActivate(GApplication *app){
   gtk_box_append(GTK_BOX(mainHorizontalR), CVsDec);
   printf("cvsdec\n");
   generateValues();
+  // SSlider
+  gtk_box_append(GTK_BOX(mainHorizontalR), separatorV2);
+  SAdjustment = gtk_adjustment_new(
+  	50,   // default
+  	0,    // min
+  	100,  // max
+  	25,   // step // Arrow keys
+	25,   // page increment? // PAGE UP & PAGE DOWN   lmao who uses these 
+	0);   // page size?
+  SSlider = gtk_scale_new(GTK_ORIENTATION_VERTICAL, SAdjustment);
+  gtk_box_append(GTK_BOX(mainHorizontalR), SSlider);
+  gtk_range_set_inverted(GTK_RANGE(SSlider), TRUE);
+  gtk_range_set_slider_size_fixed(GTK_RANGE(SSlider), TRUE);
+  gtk_scale_add_mark(GTK_SCALE(SSlider), 0, GTK_POS_RIGHT, "Speed");
+  gtk_scale_add_mark(GTK_SCALE(SSlider), 25, GTK_POS_RIGHT, "");
+  gtk_scale_add_mark(GTK_SCALE(SSlider), 50, GTK_POS_RIGHT, "");
+  gtk_scale_add_mark(GTK_SCALE(SSlider), 75, GTK_POS_RIGHT, "");
+  gtk_scale_add_mark(GTK_SCALE(SSlider), 100, GTK_POS_RIGHT, "100%");
+  // if anyone reads this please open an issue or DM me if you know how to attract slider to values when using mouse
 
 
   // Code Input Field
@@ -267,17 +270,6 @@ static void windowActivate(GApplication *app){
 int main(int argc, char **argv){
   GtkApplication *window;
   int status;
-
-  lampanelgtkOptions options;
-
-  if (!parse_options(&options, &argc, &argv)) {
-        // Error occured while parcing options
-        return 1;
-  }
-
-  if(debugMode){
-    printf("[info] debugMode enabled\n");
-  }
 
   window = gtk_application_new("site.degroland.lampanel-gtk", G_APPLICATION_DEFAULT_FLAGS);
   g_signal_connect(window, "activate", G_CALLBACK(windowActivate), NULL);
