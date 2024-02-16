@@ -51,9 +51,9 @@ static void generateLamps(){
   for(int i=0;i<8;i++){
     for(int j=0;j<16;j++){
       if((lampsMatrix[i] >> (15-j))%2 == 0){
-        lampImage = gtk_image_new_from_file("./assets/icons/off.png");
+        lampImage = gtk_image_new_from_file("./src/assets/icons/off.png");
       } else {
-        lampImage = gtk_image_new_from_file("./assets/icons/on.png");
+        lampImage = gtk_image_new_from_file("./src/assets/icons/on.png");
       }
       gtk_flow_box_append(GTK_FLOW_BOX(lampsBox),lampImage);
     }
@@ -141,7 +141,7 @@ static void windowActivate(GApplication *app){
   window = gtk_application_window_new(GTK_APPLICATION(app));
   gtk_window_set_title(GTK_WINDOW(window), "Lampanel GTK");
   //gtk_window_set_icon_name(GTK_WINDOW(window), "application-x-executable");
-  gtk_window_set_icon_name(GTK_WINDOW(window), "./assets/icons/on.png");
+  gtk_window_set_icon_name(GTK_WINDOW(window), "./src/assets/icons/on.png");
   gtk_window_set_default_size(GTK_WINDOW(window), 300, 200);
   gtk_window_set_titlebar(GTK_WINDOW(window), titlebar);
   printf("window\n");
@@ -226,7 +226,7 @@ static void windowActivate(GApplication *app){
   codeBuffer = gtk_source_buffer_new(NULL);
   //codeLangStyle = 
   codeLangMan = gtk_source_language_manager_new();
-  gtk_source_language_manager_append_search_path(codeLangMan, (const gchar *)("./assets/langs/"));
+  gtk_source_language_manager_append_search_path(codeLangMan, (const gchar *)("./src/assets/langs/"));
   //gtk_source_language_manager_get_language_from_file(codeLangMan, langsPath); // outdated
   codeLang = gtk_source_language_manager_get_language(codeLangMan, "asm");
   if(codeLang == NULL){

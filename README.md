@@ -24,8 +24,10 @@ E97 Emulator rebuilt from scratch in C + GTK 4 (gtksourceview 5), inspired by [K
 Ok, I can say GTK is actually not that bad after I saw C++
 
 # Building & Running
+Firstly you need to install ```gtksourceview5```
 As install.sh script is now available you can just run it:
 ```./install.sh```
 and binary should be available in ./build
 If permission denied do:
 ```chmod +x ./install.sh```
+
