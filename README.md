@@ -22,14 +22,8 @@ E97 Emulator rebuilt from scratch in C + GTK 4 (gtksourceview 5), inspired by [K
 Ok, GTK is actully not that bad I can say after I saw C++
 
 # Building & Running
-Maybe install.sh script will be some time soon
-```
-#####################################################################################################################
-# There is no cmake, program should be compiled with gcc and `gtksourceview5` (aur) should be installed             #
-# => gcc $(pkg-config --cflags gtksourceview-5) -o lampanel-gtk lampanel-gtk.c $(pkg-config --libs gtksourceview-5) #
-# (I use gcc so have no idea how to compile it in clang or etc)                                                     #
-#                                                                                                                   #
-# Tested with EndeavourOS + KDE (Wayland) + zen kernel                                                              #
-#####################################################################################################################
-```
-
+As install.sh script is now available you can just run it:
+```./install.sh```
+and binary should be available in ./build
+If permission denied do:
+```chmod +x ./install.sh```
