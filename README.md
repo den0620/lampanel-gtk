@@ -21,7 +21,7 @@ E97 Emulator rebuilt from scratch in C + GTK 4 (gtksourceview 5), inspired by [K
 
 # Time bounds (WHEN DONE????)
 ~~Never? Idk I realised I dont like GTK~~
-Ok, GTK is actully not that bad I can say after I saw C++
+Ok, I can say GTK is actually not that bad after I saw C++
 
 # Building & Running
 As install.sh script is now available you can just run it:
