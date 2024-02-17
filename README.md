@@ -2,7 +2,7 @@
 E97 Emulator rebuilt from scratch in C + GTK 4 (gtksourceview 5), inspired by [K. Polyakov's "Лампанель"](https://kpolyakov.spb.ru/prog/lamp.htm).
 
 [![works badge](https://cdn.jsdelivr.net/gh/nikku/works-on-my-machine@v0.2.0/badge.svg)](https://github.com/nikku/works-on-my-machine)
-![GitHub License](https://img.shields.io/github/license/den0620/lampanel-gtk)
+[![GitHub License](https://img.shields.io/github/license/den0620/lampanel-gtk)](https://github.com/den0620/lampanel-gtk/blob/main/LICENSE)
 
 ![Current Lampanel view](https://github.com/den0620/lampanel-gtk/blob/main/lampanel-gtk.png)
 
