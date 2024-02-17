@@ -40,6 +40,8 @@ and binary should be available in ./build
 If permission denied do:
 ```chmod +x ./install.sh```
 
+Sufficient single line: ```./install.sh && ./build/lampanel```
+
 # Contribution
 
 Please help
