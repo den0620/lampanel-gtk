@@ -5,7 +5,7 @@
 
 static bool debugMode = false;
 static GtkWidget *lampanelInput, *lampImage;
-static GtkSourceBuffer *codeBuffer;
+static GtkSourceBuffer *codeBuffer, *compiledBuffer, *memoryBuffer;
 static GtkSourceLanguageManager *codeLangMan;
 static GtkSourceLanguage *codeLang;
 static uint16_t r0, r1, r2, r3, pc, sp, ps;
@@ -99,7 +99,7 @@ static void runEmulation(){
 }
 
 static void windowActivate(GApplication *app){
-  GtkWidget *window, *mainVertical, *childHorizontalU, *childHorizontalL, *compiledOutput, *mainHorizontalR, *memoryOverview, *runProgram, *titlebar, *scrollWindow;
+  GtkWidget *window, *mainVertical, *childHorizontalU, *childHorizontalL, *compiledOutput, *mainHorizontalR, *memoryOutput, *runProgram, *titlebar, *scrollWindow, *scrollWindow2, *scrollWindow3;
   GdkPixbuf *icon;
 
 
@@ -255,13 +255,35 @@ static void windowActivate(GApplication *app){
   gtk_box_append(GTK_BOX(childHorizontalL), scrollWindow);
 
   // Compiled File Field
-  compiledOutput = gtk_text_view_new();
-  gtk_box_append(GTK_BOX(childHorizontalL), compiledOutput);
+  compiledBuffer = gtk_source_buffer_new(NULL);
+  gtk_source_buffer_set_highlight_syntax(GTK_SOURCE_BUFFER(compiledBuffer), TRUE);
+  gtk_source_buffer_set_language(GTK_SOURCE_BUFFER(compiledBuffer), GTK_SOURCE_LANGUAGE(codeLang));
+  compiledOutput = gtk_source_view_new_with_buffer(compiledBuffer);
+  gtk_source_view_set_show_line_numbers(GTK_SOURCE_VIEW(compiledOutput), TRUE);
+  gtk_text_view_set_editable(GTK_TEXT_VIEW(compiledOutput), FALSE);
+  scrollWindow2 = gtk_scrolled_window_new();
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollWindow2), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scrollWindow2), 100);
+  gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(scrollWindow2), 200);
+  gtk_scrolled_window_set_kinetic_scrolling(GTK_SCROLLED_WINDOW(scrollWindow2), TRUE);
+  gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrollWindow2), compiledOutput);
+  gtk_box_append(GTK_BOX(childHorizontalL), scrollWindow2);
   printf("compiledOutput\n");
 
   // Memory Overview Field
-  memoryOverview = gtk_text_view_new();
-  gtk_box_append(GTK_BOX(childHorizontalL), memoryOverview);
+  memoryBuffer = gtk_source_buffer_new(NULL);
+  gtk_source_buffer_set_highlight_syntax(GTK_SOURCE_BUFFER(memoryBuffer), TRUE);
+  gtk_source_buffer_set_language(GTK_SOURCE_BUFFER(memoryBuffer), GTK_SOURCE_LANGUAGE(codeLang));
+  memoryOutput = gtk_source_view_new_with_buffer(memoryBuffer);
+  gtk_source_view_set_show_line_numbers(GTK_SOURCE_VIEW(memoryOutput), TRUE);
+  gtk_text_view_set_editable(GTK_TEXT_VIEW(memoryOutput), FALSE);
+  scrollWindow3 = gtk_scrolled_window_new();
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrollWindow3), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scrollWindow3), 100);
+  gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(scrollWindow3), 200);
+  gtk_scrolled_window_set_kinetic_scrolling(GTK_SCROLLED_WINDOW(scrollWindow3), TRUE);
+  gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scrollWindow3), memoryOutput);
+  gtk_box_append(GTK_BOX(childHorizontalL), scrollWindow3);
   printf("memoryOverview\n");
 
   gtk_window_present(GTK_WINDOW(window));
